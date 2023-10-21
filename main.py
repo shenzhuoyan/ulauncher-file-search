@@ -1,5 +1,5 @@
 """ Main Module """
-
+import chardet
 import logging
 import os
 import subprocess
@@ -47,30 +47,46 @@ class FileSearchExtension(Extension):
         """ Searches for Files using fd command """
         cmd = [
             'timeout', '5s', 'ionice', '-c', '3', bin_name, '--threads', '1',
-            '--hidden'
+            #'--hidden'
         ]
-
+        
+        # 是否显示隐藏的文件或目录
+        if self.preferences['show_hidden'] == 'true':
+            cmd.append('--hidden')
+        
         if file_type == FILE_SEARCH_FILE:
             cmd.append('-t')
             cmd.append('f')
         elif file_type == FILE_SEARCH_DIRECTORY:
             cmd.append('-t')
             cmd.append('d')
-
-        cmd.append(query)
-        cmd.append(self.preferences['base_dir'])
-
-        process = subprocess.Popen(cmd,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-
-        out, err = process.communicate()
-
-        if err:
-            self.logger.error(err)
-            return []
-
-        files = out.split('\n'.encode())
+        
+        # 多个基目录
+        for path in self.preferences['base_dir'].split(';'):
+            cmd.append('--search-path')
+            cmd.append(path)
+        #cmd.append(self.preferences['base_dir'])
+        #cmd.append('-Fa')
+        
+        # 多个关键词，就一层层筛选
+        # 遍历关键词
+        for index, kw in enumerate(query.split(' ')):
+            if index != 0:
+                cmd.append('| grep')
+            cmd.append(kw)
+            
+            
+        # 把生成的命令输出到日志
+        self.logger.info(' '.join(cmd))
+        
+        # 执行搜索的命令
+        # subprocess.run 如果命令是数组，就不能使用管道符。所以我把命令转称字符串了，同时Shell=True打开
+        process = subprocess.run(' '.join(cmd), stdout=subprocess.PIPE, encoding='utf-8',shell=True)
+        out = process.stdout
+        if process.returncode != 0:
+            self.logger.error(process.returncode)
+        
+        files = out.split('\n')
         files = list([_f for _f in files if _f])  # remove empty lines
 
         result = []
@@ -91,7 +107,8 @@ class FileSearchExtension(Extension):
             if os.path.isdir(f):
                 icon = folder_icon
             else:
-                type_, encoding = mimetypes.guess_type(f.decode('utf-8'))
+                #type_, encoding = mimetypes.guess_type(f.decode('utf-8'))
+                type_, encoding = mimetypes.guess_type(f)
 
                 if type_:
                     file_icon = Gio.content_type_get_icon(type_)
@@ -131,7 +148,7 @@ class KeywordQueryEventListener(EventListener):
 
         query = event.get_argument()
 
-        if not query or len(query) < 3:
+        if not query or len(query) < 2:
             return RenderResultListAction([
                 ExtensionResultItem(
                     icon='images/icon.png',
@@ -150,7 +167,7 @@ class KeywordQueryEventListener(EventListener):
             file_type = FILE_SEARCH_FILE
         elif keyword_id == "fd_kw":
             file_type = FILE_SEARCH_DIRECTORY
-
+        
         results = extension.search(query.strip(), file_type)
 
         if not results:
@@ -166,10 +183,13 @@ class KeywordQueryEventListener(EventListener):
             items.append(
                 ExtensionSmallResultItem(
                     icon=result['icon'],
-                    name=result['path'].decode("utf-8"),
-                    on_enter=OpenAction(result['path'].decode("utf-8")),
+                    #name=result['path'].decode("utf-8"),
+                    name=result['path'],
+                    #on_enter=OpenAction(result['path'].decode("utf-8")),
+                    on_enter=OpenAction(result['path']),
                     on_alt_enter=extension.get_open_in_terminal_script(
-                        result['path'].decode("utf-8"))))
+                        #result['path'].decode("utf-8"))))
+                        result['path'])))
 
         return RenderResultListAction(items)
 

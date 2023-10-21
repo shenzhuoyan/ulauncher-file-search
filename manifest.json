@@ -5,7 +5,7 @@
   "developer_name": "Bruno Paz",
   "icon": "images/icon.png",
   "options": {
-    "query_debounce": 0.5
+    "query_debounce": 0.1
   },
   "preferences": [
     {
@@ -38,8 +38,16 @@
       "id": "base_dir",
       "type": "input",
       "name": "Base dir",
-      "description": "The base directory to start your searches. Ex: /",
+      "description": "The base directory to start your searches. Ex: /. separated by ';'",
       "default_value": "/"
+    },
+    {
+      "id": "show_hidden",
+      "type": "select",
+      "name": "Show hidden file",
+      "description": "select whether show hidden file or directory",
+      "default_value": "false",
+      "options": ["false", "true"]
     }
   ]
 }

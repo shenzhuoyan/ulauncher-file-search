@@ -10,7 +10,13 @@
 
 ## Demo
 
-![demo](demo.gif)
+![Kooha-2023-10-21-19-25-36.gif](./Kooha-2023-10-21-19-25-36.gif)
+
+## 我做了什么
+
+- 可以多个搜索目录
+- 可以多个关键词来联合筛选文件
+- 添加是否包含隐藏文件的开关
 
 ## Requirements
 
@@ -66,7 +72,7 @@ You then have to start the Circle CI extension manually. In the output of the pr
 
 ```sh
 VERBOSE=1 ULAUNCHER_WS_API=ws://127.0.0.1:5054/file-search PYTHONPATH=/usr/lib/python3/dist-packages /usr/bin/python3 /home/bruno/.cache/ulauncher_cache/extensions/file-search/main.py
-``` 
+```
 
 Copy and run that command in another terminal window.
 
