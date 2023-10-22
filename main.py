@@ -5,6 +5,7 @@ import os
 import subprocess
 import mimetypes
 import gi
+import re
 gi.require_version('Gtk', '3.0')
 # pylint: disable=import-error
 from gi.repository import Gio, Gtk
@@ -19,7 +20,7 @@ from ulauncher.api.shared.action.RunScriptAction import RunScriptAction
 from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 
-LOGGING = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 FILE_SEARCH_ALL = 'ALL'
 
@@ -35,6 +36,7 @@ class FileSearchExtension(Extension):
         """ Initializes the extension """
         super(FileSearchExtension, self).__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
+
 
     def search(self, query, file_type=None):
         """ Try with the default fd or the previously successful command """
@@ -77,14 +79,14 @@ class FileSearchExtension(Extension):
             
             
         # 把生成的命令输出到日志
-        self.logger.info(' '.join(cmd))
+        logger.info(' '.join(cmd))
         
         # 执行搜索的命令
         # subprocess.run 如果命令是数组，就不能使用管道符。所以我把命令转称字符串了，同时Shell=True打开
         process = subprocess.run(' '.join(cmd), stdout=subprocess.PIPE, encoding='utf-8',shell=True)
         out = process.stdout
         if process.returncode != 0:
-            self.logger.error(process.returncode)
+            logger.error(process.returncode)
         
         files = out.split('\n')
         files = list([_f for _f in files if _f])  # remove empty lines
@@ -148,7 +150,12 @@ class KeywordQueryEventListener(EventListener):
 
         query = event.get_argument()
 
-        if not query or len(query) < 2:
+        
+        #if not query or (query.isalpha() and len(query) < 2) :
+
+        # 没有输入, 或输入只有1个英文字符，就不搜索
+        if (query is None) or (re.match('^[a-zA-Z0-9]+',query) and len(query) == 1):
+            logger.info('只有1个英文字符')
             return RenderResultListAction([
                 ExtensionResultItem(
                     icon='images/icon.png',
