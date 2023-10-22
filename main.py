@@ -1,5 +1,5 @@
 """ Main Module """
-import chardet
+
 import logging
 import os
 import subprocess
