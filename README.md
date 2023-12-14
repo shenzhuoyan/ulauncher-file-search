@@ -32,6 +32,10 @@ Open ulauncher preferences window -> extensions -> add extension and paste the f
 https://github.com/brpaz/ulauncher-file-search
 ```
 
+## 手动安装
+
+下载、解压，然后将文件夹 `ulauncher-file-search-master` 复制到 `~/.local/share/ulauncher/extensions`，没有这个目录的话需要先创建
+
 ## Usage
 
 This extension provides the following keywords:
