@@ -29,7 +29,7 @@
 Open ulauncher preferences window -> extensions -> add extension and paste the following url:
 
 ```
-https://github.com/brpaz/ulauncher-file-search
+https://github.com/shenzhuoyan/ulauncher-file-search
 ```
 
 ## 手动安装
